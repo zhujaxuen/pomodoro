@@ -24,7 +24,7 @@
   body {
     min-height: 100vh; min-height: 100dvh;
     background: var(--bg); color: var(--ink); font-family: var(--font);
-    transition: background .6s ease;
+    transition: background .6s ease, padding .25s ease;
     display: grid; place-items: center; padding: 24px;
   }
   .bg { position: fixed; inset: 0; z-index: -1; background-position: center; }
@@ -74,7 +74,7 @@
   #ytwrap { aspect-ratio: 16 / 9; margin-top: 28px; border-radius: 14px; overflow: hidden; background: #000; }
   #ytwrap iframe { width: 100%; height: 100%; display: block; }
 
-  .panels { margin-top: 28px; display: grid; gap: 10px; text-align: left; }
+  .panels { display: grid; gap: 10px; text-align: left; }
   details { background: var(--soft); border-radius: 14px; padding: 14px 16px; }
   summary { cursor: pointer; font-weight: 600; }
   .body { margin-top: 14px; display: grid; gap: 12px; }
@@ -101,32 +101,32 @@
   .cfg label { display: grid; gap: 6px; font-size: .9rem; }
   .cfg input { width: 84px; text-align: center; font-size: 1.1rem; }
 
+  .side {
+    position: fixed; top: 0; bottom: 0; left: 0; z-index: 30; width: min(340px, 88vw);
+    overflow-y: auto; padding: 20px; background: rgba(0, 0, 0, .32);
+    -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+    transform: translateX(-100%); visibility: hidden;
+    transition: transform .25s ease, visibility .25s;
+  }
+  .side-open .side { transform: none; visibility: visible; }
+  .side-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; font-size: 1.2rem; }
+  .side-head .ghost { padding: 6px 12px; font-size: 1.2rem; line-height: 1; }
+  .menu {
+    position: fixed; top: 16px; left: 16px; z-index: 20; font: inherit; font-weight: 600;
+    color: var(--ink); background: var(--soft); border: 0; border-radius: 12px; padding: 10px 16px; cursor: pointer;
+  }
+  .side-open .menu { display: none; }
+  @media (min-width: 900px) { .side-open { padding-left: 364px; } }
+
   button:focus-visible, input:focus-visible, summary:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 </head>
 <body data-mode="focus">
 <div class="bg" id="bg" aria-hidden="true"></div>
-<main>
-  <div class="modes" role="group" aria-label="Modo">
-    <button data-m="focus" aria-pressed="true">Foco</button>
-    <button data-m="short" aria-pressed="false">Pausa curta</button>
-    <button data-m="long" aria-pressed="false">Pausa longa</button>
-  </div>
-
-  <div class="time" id="time" role="timer" aria-live="off">25:00</div>
-  <div class="bar"><i id="bar"></i></div>
-
-  <div class="actions">
-    <button class="go" id="go">Iniciar</button>
-    <button class="ghost" id="reset" aria-label="Reiniciar o timer">Reiniciar</button>
-  </div>
-
-  <input class="task" id="task" type="text" maxlength="80" placeholder="No que você vai trabalhar?" aria-label="Tarefa atual">
-  <div class="dots" id="dots" aria-label="Pomodoros do ciclo"></div>
-
-  <div id="ytwrap" hidden></div>
-
+<button class="menu" id="menu" aria-controls="side" aria-expanded="false">☰ Menu</button>
+<aside class="side" id="side" aria-label="Menu lateral">
+  <div class="side-head"><strong>Menu</strong><button class="ghost" id="sideclose" aria-label="Fechar menu">×</button></div>
   <div class="panels">
     <details>
       <summary>Fundo</summary>
@@ -160,6 +160,27 @@
       </div>
     </details>
   </div>
+</aside>
+<main>
+  <div class="modes" role="group" aria-label="Modo">
+    <button data-m="focus" aria-pressed="true">Foco</button>
+    <button data-m="short" aria-pressed="false">Pausa curta</button>
+    <button data-m="long" aria-pressed="false">Pausa longa</button>
+  </div>
+
+  <div class="time" id="time" role="timer" aria-live="off">25:00</div>
+  <div class="bar"><i id="bar"></i></div>
+
+  <div class="actions">
+    <button class="go" id="go">Iniciar</button>
+    <button class="ghost" id="reset" aria-label="Reiniciar o timer">Reiniciar</button>
+  </div>
+
+  <input class="task" id="task" type="text" maxlength="80" placeholder="No que você vai trabalhar?" aria-label="Tarefa atual">
+  <div class="dots" id="dots" aria-label="Pomodoros do ciclo"></div>
+
+  <div id="ytwrap" hidden></div>
+
 </main>
 
 <script>
@@ -374,6 +395,18 @@
 
   const savedMusic = store.get("pomo-music", "");
   if (savedMusic) { $("yturl").value = savedMusic; loadMusic(savedMusic); }
+
+  /* ---------- Menu lateral ---------- */
+  const setSide = open => {
+    document.body.classList.toggle("side-open", open);
+    $("side").inert = !open; $("menu").setAttribute("aria-expanded", open);
+  };
+  $("menu").onclick = () => { setSide(true); $("sideclose").focus(); };
+  $("sideclose").onclick = () => { setSide(false); $("menu").focus(); };
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape" && document.body.classList.contains("side-open")) { setSide(false); $("menu").focus(); }
+  });
+  setSide(window.innerWidth >= 900);
 
   renderBg();
   render();
