@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Pomodoro</title>
-<meta name="description" content="Timer Pomodoro simples: 25 minutos de foco, pausas curtas e longas.">
+<meta name="description" content="Timer Pomodoro com fundos personalizados e música do YouTube.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍅</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,81 +20,93 @@
   body[data-mode="long"]  { --bg: #27508f; }
 
   * { box-sizing: border-box; margin: 0; }
-  html, body { height: 100%; }
+  html { min-height: 100%; }
   body {
-    background: var(--bg);
-    color: var(--ink);
-    font-family: var(--font);
+    min-height: 100vh; min-height: 100dvh;
+    background: var(--bg); color: var(--ink); font-family: var(--font);
     transition: background .6s ease;
-    display: grid;
-    place-items: center;
-    padding: 24px;
+    display: grid; place-items: center; padding: 24px;
   }
+  .bg { position: fixed; inset: 0; z-index: -1; background-position: center; }
+  .has-bg .bg::after { content: ""; position: absolute; inset: 0; background: rgba(0, 0, 0, .38); }
+  .has-bg .time { text-shadow: 0 2px 28px rgba(0, 0, 0, .35); }
+
   main { width: min(560px, 100%); text-align: center; }
 
-  .modes {
-    display: inline-flex; gap: 4px; padding: 4px;
-    background: var(--soft); border-radius: 999px;
-  }
+  .modes { display: inline-flex; gap: 4px; padding: 4px; background: var(--soft); border-radius: 999px; }
   .modes button {
-    font: inherit; font-weight: 600; font-size: .95rem;
-    color: var(--ink); background: none; border: 0; cursor: pointer;
-    padding: 8px 16px; border-radius: 999px;
+    font: inherit; font-weight: 600; font-size: .95rem; color: var(--ink);
+    background: none; border: 0; cursor: pointer; padding: 8px 16px; border-radius: 999px;
   }
   .modes button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
 
   .time {
-    font-size: clamp(5.5rem, 28vw, 11rem);
-    font-weight: 800; line-height: 1;
-    font-variant-numeric: tabular-nums;
-    letter-spacing: -.04em;
-    margin: 40px 0 8px;
+    font-size: clamp(5.5rem, 28vw, 11rem); font-weight: 800; line-height: 1;
+    font-variant-numeric: tabular-nums; letter-spacing: -.04em; margin: 40px 0 8px;
   }
   .bar { height: 6px; background: var(--soft); border-radius: 3px; overflow: hidden; margin: 0 auto 28px; width: 70%; }
   .bar i { display: block; height: 100%; width: 0; background: var(--ink); transition: width .5s linear; }
 
   .actions { display: flex; gap: 12px; justify-content: center; }
   .go {
-    font: inherit; font-weight: 800; font-size: 1.4rem;
-    background: var(--ink); color: var(--bg);
-    border: 0; border-radius: 16px; padding: 16px 56px; cursor: pointer;
-    min-width: 180px;
+    font: inherit; font-weight: 800; font-size: 1.4rem; background: var(--ink); color: var(--bg);
+    border: 0; border-radius: 16px; padding: 16px 56px; cursor: pointer; min-width: 180px;
   }
   .go:active { transform: translateY(2px); }
   .ghost {
-    font: inherit; font-weight: 600; color: var(--ink);
-    background: var(--soft); border: 0; border-radius: 16px;
-    padding: 16px 20px; cursor: pointer;
+    font: inherit; font-weight: 600; color: var(--ink); background: var(--soft);
+    border: 0; border-radius: 12px; padding: 12px 18px; cursor: pointer;
   }
 
   .task {
-    display: block; width: 100%; margin: 36px 0 20px;
-    font: inherit; font-size: 1.15rem; text-align: center; color: var(--ink);
-    background: none; border: 0; border-bottom: 2px solid var(--soft);
-    padding: 8px;
+    display: block; width: 100%; margin: 36px 0 20px; font: inherit; font-size: 1.15rem;
+    text-align: center; color: var(--ink); background: none; border: 0;
+    border-bottom: 2px solid var(--soft); padding: 8px;
   }
-  .task::placeholder { color: rgba(255, 246, 238, .6); }
+  .task::placeholder { color: rgba(255, 246, 238, .65); }
   .task:focus { outline: none; border-color: var(--ink); }
 
   .dots { display: flex; gap: 10px; justify-content: center; align-items: center; }
   .dots span { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--ink); }
   .dots span.on { background: var(--ink); }
-  .dots small { margin-left: 10px; opacity: .85; }
+  .dots small { margin-left: 10px; opacity: .9; }
 
-  details { margin-top: 32px; }
-  summary { cursor: pointer; font-weight: 600; opacity: .85; }
-  .cfg { display: flex; gap: 16px; justify-content: center; margin-top: 16px; flex-wrap: wrap; }
-  .cfg label { display: grid; gap: 6px; font-size: .9rem; }
-  .cfg input {
-    width: 84px; font: inherit; font-size: 1.1rem; text-align: center;
-    color: var(--ink); background: var(--soft); border: 0; border-radius: 10px; padding: 8px;
+  #ytwrap { aspect-ratio: 16 / 9; margin-top: 28px; border-radius: 14px; overflow: hidden; background: #000; }
+  #ytwrap iframe { width: 100%; height: 100%; display: block; }
+
+  .panels { margin-top: 28px; display: grid; gap: 10px; text-align: left; }
+  details { background: var(--soft); border-radius: 14px; padding: 14px 16px; }
+  summary { cursor: pointer; font-weight: 600; }
+  .body { margin-top: 14px; display: grid; gap: 12px; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .row input[type="url"] { flex: 1 1 220px; }
+  input[type="url"], .cfg input {
+    font: inherit; color: var(--ink); background: rgba(0, 0, 0, .22);
+    border: 0; border-radius: 10px; padding: 10px 12px;
   }
+  input::placeholder { color: rgba(255, 246, 238, .6); }
+  .hint { font-size: .85rem; opacity: .85; }
+  .check { display: flex; gap: 8px; align-items: center; font-size: .95rem; }
+
+  .swatches { display: flex; flex-wrap: wrap; gap: 10px; }
+  .sw { width: 56px; height: 38px; border-radius: 10px; border: 2px solid transparent; cursor: pointer; background-clip: padding-box; }
+  .sw[aria-pressed="true"] { border-color: var(--ink); outline: 2px solid rgba(0, 0, 0, .35); }
+  .swrap { position: relative; }
+  .x {
+    position: absolute; top: -7px; right: -7px; width: 20px; height: 20px; border-radius: 50%;
+    border: 0; background: var(--ink); color: #222; font-size: 14px; line-height: 1; cursor: pointer;
+  }
+
+  .cfg { display: flex; gap: 16px; flex-wrap: wrap; }
+  .cfg label { display: grid; gap: 6px; font-size: .9rem; }
+  .cfg input { width: 84px; text-align: center; font-size: 1.1rem; }
 
   button:focus-visible, input:focus-visible, summary:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 </head>
 <body data-mode="focus">
+<div class="bg" id="bg" aria-hidden="true"></div>
 <main>
   <div class="modes" role="group" aria-label="Modo">
     <button data-m="focus" aria-pressed="true">Foco</button>
@@ -111,17 +123,43 @@
   </div>
 
   <input class="task" id="task" type="text" maxlength="80" placeholder="No que você vai trabalhar?" aria-label="Tarefa atual">
-
   <div class="dots" id="dots" aria-label="Pomodoros do ciclo"></div>
 
-  <details>
-    <summary>Configurar tempos</summary>
-    <div class="cfg">
-      <label>Foco (min)<input id="c-focus" type="number" min="1" max="120" value="25"></label>
-      <label>Pausa curta<input id="c-short" type="number" min="1" max="60" value="5"></label>
-      <label>Pausa longa<input id="c-long" type="number" min="1" max="60" value="15"></label>
-    </div>
-  </details>
+  <div id="ytwrap" hidden></div>
+
+  <div class="panels">
+    <details>
+      <summary>Fundo</summary>
+      <div class="body">
+        <div class="swatches" id="swatches"></div>
+        <div class="row"><button class="ghost" id="addimg">Adicionar imagem</button></div>
+        <input id="file" type="file" accept="image/*" multiple hidden>
+        <p class="hint" id="bgnote">As imagens ficam salvas só neste navegador (até 8).</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Música do YouTube</summary>
+      <div class="body">
+        <div class="row">
+          <input id="yturl" type="url" placeholder="Cole o link de um vídeo ou playlist" aria-label="Link do YouTube">
+          <button class="ghost" id="ytload">Carregar</button>
+          <button class="ghost" id="ytclear">Remover</button>
+        </div>
+        <label class="check"><input id="sync" type="checkbox" checked> Tocar no foco e pausar com o timer</label>
+        <p class="hint" id="ytnote">O player aparece abaixo do timer. Também dá para dar play nele direto.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Configurar tempos</summary>
+      <div class="body cfg">
+        <label>Foco (min)<input id="c-focus" type="number" min="1" max="120" value="25"></label>
+        <label>Pausa curta<input id="c-short" type="number" min="1" max="60" value="5"></label>
+        <label>Pausa longa<input id="c-long" type="number" min="1" max="60" value="15"></label>
+      </div>
+    </details>
+  </div>
 </main>
 
 <script>
@@ -130,9 +168,10 @@
   const LABEL = { focus: "Foco", short: "Pausa curta", long: "Pausa longa" };
   const store = {
     get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } },
-    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch { return false; } }
   };
 
+  /* ---------- Timer ---------- */
   const cfg = store.get("pomo-cfg", { focus: 25, short: 5, long: 15 });
   let mode = "focus", done = store.get("pomo-done", 0), running = false;
   let remaining = cfg.focus * 60, endAt = 0, tick = null;
@@ -165,15 +204,14 @@
     } catch {}
   }
 
-  function setMode(m) {
-    stop(); mode = m; remaining = total(); render();
-  }
+  function setMode(m) { stop(); mode = m; remaining = total(); render(); }
   function start() {
     if ("Notification" in window && Notification.permission === "default") Notification.requestPermission();
     running = true; endAt = Date.now() + remaining * 1000;
     tick = setInterval(update, 250); render();
+    if (mode === "focus") musicPlay();
   }
-  function stop() { running = false; clearInterval(tick); render(); }
+  function stop() { running = false; clearInterval(tick); render(); musicPause(); }
 
   function update() {
     remaining = Math.max(0, Math.round((endAt - Date.now()) / 1000));
@@ -210,11 +248,134 @@
     if (e.code === "Space" && !/INPUT|BUTTON|SUMMARY/.test(e.target.tagName)) { e.preventDefault(); $("go").click(); }
   });
 
-  // zera o contador quando muda o dia
   const today = new Date().toDateString();
   if (store.get("pomo-day", today) !== today) { done = 0; store.set("pomo-done", 0); }
   store.set("pomo-day", today);
 
+  /* ---------- Fundos ---------- */
+  const MAX_IMGS = 8;
+  const BG = [
+    ["Crepúsculo", "linear-gradient(160deg,#1a1040,#6b2d73 55%,#f08a5d)"],
+    ["Oceano", "linear-gradient(180deg,#0b3d5c,#1b7a8c 60%,#9fd8cb)"],
+    ["Floresta", "radial-gradient(circle at 20% 20%,#3f8f5a,transparent 55%),radial-gradient(circle at 80% 85%,#0f4a3a,transparent 60%),#0b2e24"],
+    ["Aurora", "radial-gradient(ellipse at 30% 0%,#35e0a1aa,transparent 55%),radial-gradient(ellipse at 80% 25%,#8a5cf6aa,transparent 55%),#0a1226"],
+    ["Deserto", "linear-gradient(180deg,#f2b36b,#d9703f 55%,#7a2f2a)"],
+    ["Estrelas", "radial-gradient(1.5px 1.5px at 20px 30px,#fff,transparent),radial-gradient(1px 1px at 90px 120px,#fff,transparent),radial-gradient(1.5px 1.5px at 160px 60px,#fff,transparent),linear-gradient(#050914,#14224a)", "173px 191px,227px 211px,263px 251px,cover"],
+    ["Sakura", "linear-gradient(135deg,#ffd6e0,#f7a1c4 50%,#b56b9c)"],
+    ["Grafite", "repeating-linear-gradient(0deg,#ffffff10 0 1px,transparent 1px 40px),repeating-linear-gradient(90deg,#ffffff10 0 1px,transparent 1px 40px),#20242b"],
+    ["Névoa", "linear-gradient(180deg,#586b86,#9fb0c6 60%,#dfe6ee)"],
+    ["Lava", "radial-gradient(ellipse at 50% 115%,#ff6a2b,transparent 60%),radial-gradient(ellipse at 10% 100%,#c81d25,transparent 50%),#1a0a0c"]
+  ];
+  let imgs = store.get("pomo-imgs", []), sel = store.get("pomo-bg", "d");
+  const note = t => { $("bgnote").textContent = t; };
+
+  function renderBg() {
+    const pressed = s => `aria-pressed="${sel === s}"`;
+    let h = `<button class="sw" data-s="d" style="background:var(--bg)" title="Cor do modo" aria-label="Cor do modo" ${pressed("d")}></button>`;
+    BG.forEach((b, i) => {
+      h += `<button class="sw" data-s="p${i}" style="background:${b[1]};background-size:${b[2] || "cover"}" title="${b[0]}" aria-label="${b[0]}" ${pressed("p" + i)}></button>`;
+    });
+    imgs.forEach((src, i) => {
+      h += `<span class="swrap"><button class="sw" data-s="i${i}" style="background:url(${src}) center/cover" aria-label="Imagem ${i + 1}" ${pressed("i" + i)}></button>` +
+           `<button class="x" data-x="${i}" aria-label="Remover imagem ${i + 1}">×</button></span>`;
+    });
+    $("swatches").innerHTML = h;
+
+    const el = $("bg"); let v = "none", size = "cover";
+    if (sel[0] === "p" && BG[+sel.slice(1)]) { const b = BG[+sel.slice(1)]; v = b[1]; size = b[2] || "cover"; }
+    else if (sel[0] === "i" && imgs[+sel.slice(1)]) v = `url(${imgs[+sel.slice(1)]}) center/cover`;
+    else sel = "d";
+    el.style.background = v; el.style.backgroundSize = size;
+    document.body.classList.toggle("has-bg", sel !== "d");
+  }
+
+  $("swatches").onclick = e => {
+    const x = e.target.closest("[data-x]");
+    if (x) {
+      const j = +x.dataset.x; imgs.splice(j, 1); store.set("pomo-imgs", imgs);
+      if (sel[0] === "i") { const n = +sel.slice(1); sel = n === j ? "d" : n > j ? "i" + (n - 1) : sel; }
+      store.set("pomo-bg", sel); return renderBg();
+    }
+    const s = e.target.closest("[data-s]");
+    if (s) { sel = s.dataset.s; store.set("pomo-bg", sel); renderBg(); }
+  };
+
+  function shrink(file) {
+    return new Promise((ok, fail) => {
+      const img = new Image(), u = URL.createObjectURL(file);
+      img.onload = () => {
+        const k = Math.min(1, 1600 / Math.max(img.width, img.height)), c = document.createElement("canvas");
+        c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+        c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(u); ok(c.toDataURL("image/jpeg", .72));
+      };
+      img.onerror = fail; img.src = u;
+    });
+  }
+
+  $("addimg").onclick = () => $("file").click();
+  $("file").onchange = async e => {
+    for (const f of [...e.target.files]) {
+      if (imgs.length >= MAX_IMGS) { note(`Limite de ${MAX_IMGS} imagens. Remova uma para adicionar outra.`); break; }
+      try {
+        imgs.push(await shrink(f));
+        if (!store.set("pomo-imgs", imgs)) { imgs.pop(); note("Sem espaço salvo no navegador. Remova uma imagem e tente de novo."); break; }
+        sel = "i" + (imgs.length - 1); store.set("pomo-bg", sel); note("Imagem adicionada.");
+      } catch { note("Não foi possível ler esse arquivo. Use JPG, PNG ou WebP."); }
+    }
+    e.target.value = ""; renderBg();
+  };
+
+  /* ---------- Música (YouTube) ---------- */
+  let yt = null, ytReady = false, pending = null;
+  const ytnote = t => { $("ytnote").textContent = t; };
+
+  function parseYT(s) {
+    try {
+      const u = new URL(s.trim()), list = u.searchParams.get("list");
+      let v = u.searchParams.get("v");
+      if (u.hostname === "youtu.be") v = u.pathname.slice(1, 12);
+      const m = u.pathname.match(/^\/(embed|shorts|live)\/([\w-]{11})/); if (m) v = m[2];
+      if (v && /^[\w-]{11}$/.test(v)) return { v, list };
+      if (list) return { list };
+    } catch {}
+    return null;
+  }
+  window.onYouTubeIframeAPIReady = () => { ytReady = true; if (pending) mount(pending); };
+  function mount(p) {
+    if (yt && yt.destroy) yt.destroy();
+    $("ytwrap").innerHTML = '<div id="yt"></div>'; $("ytwrap").hidden = false;
+    const vars = { rel: 0, playsinline: 1 };
+    if (p.list) { vars.listType = "playlist"; vars.list = p.list; }
+    yt = new YT.Player("yt", { width: "100%", height: "100%", videoId: p.v, playerVars: vars });
+  }
+  function loadMusic(url) {
+    const p = parseYT(url);
+    if (!p) return ytnote("Link inválido. Cole o endereço de um vídeo ou playlist do YouTube.");
+    store.set("pomo-music", url); ytnote("O player aparece abaixo do timer. Também dá para dar play nele direto.");
+    pending = p;
+    if (ytReady) mount(p);
+    else if (!document.getElementById("yt-api")) {
+      const s = document.createElement("script"); s.id = "yt-api"; s.src = "https://www.youtube.com/iframe_api";
+      s.onerror = () => ytnote("Não foi possível carregar o YouTube. Verifique a conexão."); document.head.appendChild(s);
+    }
+  }
+  const musicPlay = () => { if ($("sync").checked && yt && yt.playVideo) try { yt.playVideo(); } catch {} };
+  const musicPause = () => { if ($("sync").checked && yt && yt.pauseVideo) try { yt.pauseVideo(); } catch {} };
+
+  $("ytload").onclick = () => loadMusic($("yturl").value);
+  $("yturl").onkeydown = e => { if (e.key === "Enter") loadMusic($("yturl").value); };
+  $("ytclear").onclick = () => {
+    if (yt && yt.destroy) yt.destroy(); yt = null; pending = null;
+    $("ytwrap").innerHTML = ""; $("ytwrap").hidden = true; $("yturl").value = ""; store.set("pomo-music", "");
+  };
+  $("sync").checked = store.get("pomo-sync", true);
+  $("sync").onchange = e => store.set("pomo-sync", e.target.checked);
+
+  const savedMusic = store.get("pomo-music", "");
+  if (savedMusic) { $("yturl").value = savedMusic; loadMusic(savedMusic); }
+
+  renderBg();
   render();
 })();
 </script>
