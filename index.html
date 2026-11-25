@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pomodoro</title>
+<meta name="description" content="Timer Pomodoro simples: 25 minutos de foco, pausas curtas e longas.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍅</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #c8372d;
+    --ink: #fff6ee;
+    --soft: rgba(255, 246, 238, .16);
+    --font: "Bricolage Grotesque", system-ui, sans-serif;
+  }
+  body[data-mode="short"] { --bg: #1f7a63; }
+  body[data-mode="long"]  { --bg: #27508f; }
+
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font);
+    transition: background .6s ease;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+  }
+  main { width: min(560px, 100%); text-align: center; }
+
+  .modes {
+    display: inline-flex; gap: 4px; padding: 4px;
+    background: var(--soft); border-radius: 999px;
+  }
+  .modes button {
+    font: inherit; font-weight: 600; font-size: .95rem;
+    color: var(--ink); background: none; border: 0; cursor: pointer;
+    padding: 8px 16px; border-radius: 999px;
+  }
+  .modes button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+
+  .time {
+    font-size: clamp(5.5rem, 28vw, 11rem);
+    font-weight: 800; line-height: 1;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -.04em;
+    margin: 40px 0 8px;
+  }
+  .bar { height: 6px; background: var(--soft); border-radius: 3px; overflow: hidden; margin: 0 auto 28px; width: 70%; }
+  .bar i { display: block; height: 100%; width: 0; background: var(--ink); transition: width .5s linear; }
+
+  .actions { display: flex; gap: 12px; justify-content: center; }
+  .go {
+    font: inherit; font-weight: 800; font-size: 1.4rem;
+    background: var(--ink); color: var(--bg);
+    border: 0; border-radius: 16px; padding: 16px 56px; cursor: pointer;
+    min-width: 180px;
+  }
+  .go:active { transform: translateY(2px); }
+  .ghost {
+    font: inherit; font-weight: 600; color: var(--ink);
+    background: var(--soft); border: 0; border-radius: 16px;
+    padding: 16px 20px; cursor: pointer;
+  }
+
+  .task {
+    display: block; width: 100%; margin: 36px 0 20px;
+    font: inherit; font-size: 1.15rem; text-align: center; color: var(--ink);
+    background: none; border: 0; border-bottom: 2px solid var(--soft);
+    padding: 8px;
+  }
+  .task::placeholder { color: rgba(255, 246, 238, .6); }
+  .task:focus { outline: none; border-color: var(--ink); }
+
+  .dots { display: flex; gap: 10px; justify-content: center; align-items: center; }
+  .dots span { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--ink); }
+  .dots span.on { background: var(--ink); }
+  .dots small { margin-left: 10px; opacity: .85; }
+
+  details { margin-top: 32px; }
+  summary { cursor: pointer; font-weight: 600; opacity: .85; }
+  .cfg { display: flex; gap: 16px; justify-content: center; margin-top: 16px; flex-wrap: wrap; }
+  .cfg label { display: grid; gap: 6px; font-size: .9rem; }
+  .cfg input {
+    width: 84px; font: inherit; font-size: 1.1rem; text-align: center;
+    color: var(--ink); background: var(--soft); border: 0; border-radius: 10px; padding: 8px;
+  }
+
+  button:focus-visible, input:focus-visible, summary:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body data-mode="focus">
+<main>
+  <div class="modes" role="group" aria-label="Modo">
+    <button data-m="focus" aria-pressed="true">Foco</button>
+    <button data-m="short" aria-pressed="false">Pausa curta</button>
+    <button data-m="long" aria-pressed="false">Pausa longa</button>
+  </div>
+
+  <div class="time" id="time" role="timer" aria-live="off">25:00</div>
+  <div class="bar"><i id="bar"></i></div>
+
+  <div class="actions">
+    <button class="go" id="go">Iniciar</button>
+    <button class="ghost" id="reset" aria-label="Reiniciar o timer">Reiniciar</button>
+  </div>
+
+  <input class="task" id="task" type="text" maxlength="80" placeholder="No que você vai trabalhar?" aria-label="Tarefa atual">
+
+  <div class="dots" id="dots" aria-label="Pomodoros do ciclo"></div>
+
+  <details>
+    <summary>Configurar tempos</summary>
+    <div class="cfg">
+      <label>Foco (min)<input id="c-focus" type="number" min="1" max="120" value="25"></label>
+      <label>Pausa curta<input id="c-short" type="number" min="1" max="60" value="5"></label>
+      <label>Pausa longa<input id="c-long" type="number" min="1" max="60" value="15"></label>
+    </div>
+  </details>
+</main>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const LABEL = { focus: "Foco", short: "Pausa curta", long: "Pausa longa" };
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
+  };
+
+  const cfg = store.get("pomo-cfg", { focus: 25, short: 5, long: 15 });
+  let mode = "focus", done = store.get("pomo-done", 0), running = false;
+  let remaining = cfg.focus * 60, endAt = 0, tick = null;
+
+  const total = () => cfg[mode] * 60;
+  const fmt = s => String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0");
+
+  function render() {
+    $("time").textContent = fmt(remaining);
+    $("bar").style.width = (100 * (1 - remaining / total())) + "%";
+    $("go").textContent = running ? "Pausar" : "Iniciar";
+    document.title = (running ? fmt(remaining) + " · " : "") + LABEL[mode];
+    document.body.dataset.mode = mode;
+    document.querySelectorAll(".modes button").forEach(b => b.setAttribute("aria-pressed", b.dataset.m === mode));
+    const n = done % 4;
+    $("dots").innerHTML = [0, 1, 2, 3].map(i => `<span class="${i < n ? "on" : ""}"></span>`).join("") +
+      `<small>${done} ${done === 1 ? "pomodoro" : "pomodoros"} hoje</small>`;
+  }
+
+  function beep() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      [0, .25, .5].forEach(t => {
+        const o = ctx.createOscillator(), g = ctx.createGain();
+        o.frequency.value = 880; o.connect(g); g.connect(ctx.destination);
+        g.gain.setValueAtTime(.2, ctx.currentTime + t);
+        g.gain.exponentialRampToValueAtTime(.001, ctx.currentTime + t + .2);
+        o.start(ctx.currentTime + t); o.stop(ctx.currentTime + t + .22);
+      });
+    } catch {}
+  }
+
+  function setMode(m) {
+    stop(); mode = m; remaining = total(); render();
+  }
+  function start() {
+    if ("Notification" in window && Notification.permission === "default") Notification.requestPermission();
+    running = true; endAt = Date.now() + remaining * 1000;
+    tick = setInterval(update, 250); render();
+  }
+  function stop() { running = false; clearInterval(tick); render(); }
+
+  function update() {
+    remaining = Math.max(0, Math.round((endAt - Date.now()) / 1000));
+    if (remaining === 0) return finish();
+    render();
+  }
+  function finish() {
+    stop(); beep();
+    const was = mode;
+    if (was === "focus") { done++; store.set("pomo-done", done); }
+    const next = was === "focus" ? (done % 4 === 0 ? "long" : "short") : "focus";
+    if ("Notification" in window && Notification.permission === "granted")
+      new Notification(was === "focus" ? "Hora da pausa" : "Hora de focar", { body: "Próximo: " + LABEL[next] });
+    setMode(next);
+  }
+
+  $("go").onclick = () => running ? stop() : start();
+  $("reset").onclick = () => { stop(); remaining = total(); render(); };
+  document.querySelectorAll(".modes button").forEach(b => b.onclick = () => setMode(b.dataset.m));
+
+  ["focus", "short", "long"].forEach(k => {
+    const el = $("c-" + k); el.value = cfg[k];
+    el.onchange = () => {
+      cfg[k] = Math.min(+el.max, Math.max(1, +el.value || cfg[k])); el.value = cfg[k];
+      store.set("pomo-cfg", cfg);
+      if (!running && k === mode) { remaining = total(); render(); }
+    };
+  });
+
+  $("task").value = store.get("pomo-task", "");
+  $("task").oninput = e => store.set("pomo-task", e.target.value);
+
+  document.addEventListener("keydown", e => {
+    if (e.code === "Space" && !/INPUT|BUTTON|SUMMARY/.test(e.target.tagName)) { e.preventDefault(); $("go").click(); }
+  });
+
+  // zera o contador quando muda o dia
+  const today = new Date().toDateString();
+  if (store.get("pomo-day", today) !== today) { done = 0; store.set("pomo-done", 0); }
+  store.set("pomo-day", today);
+
+  render();
+})();
+</script>
+</body>
+</html>
