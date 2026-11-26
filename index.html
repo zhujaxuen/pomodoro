@@ -28,7 +28,7 @@
     display: grid; place-items: center; padding: 24px;
   }
   .bg { position: fixed; inset: 0; z-index: -1; background-position: center; }
-  .has-bg .bg::after { content: ""; position: absolute; inset: 0; background: rgba(0, 0, 0, .38); }
+  .has-bg:not(.light) .bg::after { content: ""; position: absolute; inset: 0; background: rgba(0, 0, 0, .38); }
   .has-bg .time { text-shadow: 0 2px 28px rgba(0, 0, 0, .35); }
 
   main { width: min(560px, 100%); text-align: center; }
@@ -117,6 +117,14 @@
   }
   .side-open .menu { display: none; }
   @media (min-width: 900px) { .side-open { padding-left: 364px; } }
+
+  .light { --ink: #2b2622; --soft: rgba(60, 40, 20, .09); }
+  .light .go, .light .modes button[aria-pressed="true"] { background: var(--bg); color: #fff6ee; }
+  .light .time { text-shadow: none; }
+  .light .side { background: rgba(255, 250, 242, .62); }
+  .light .task::placeholder, .light input::placeholder { color: rgba(43, 38, 34, .55); }
+  .light input[type="url"], .light .cfg input { background: rgba(0, 0, 0, .07); }
+  .light .x { color: #fff; }
 
   button:focus-visible, input:focus-visible, summary:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
@@ -275,26 +283,29 @@
 
   /* ---------- Fundos ---------- */
   const MAX_IMGS = 8;
+  const IMG = n => `url(fundos/${n}.svg) center/cover`;
+  // [id, nome, css, tamanho, tom]  (tom "light" = texto escuro)
   const BG = [
-    ["Crepúsculo", "linear-gradient(160deg,#1a1040,#6b2d73 55%,#f08a5d)"],
-    ["Oceano", "linear-gradient(180deg,#0b3d5c,#1b7a8c 60%,#9fd8cb)"],
-    ["Floresta", "radial-gradient(circle at 20% 20%,#3f8f5a,transparent 55%),radial-gradient(circle at 80% 85%,#0f4a3a,transparent 60%),#0b2e24"],
-    ["Aurora", "radial-gradient(ellipse at 30% 0%,#35e0a1aa,transparent 55%),radial-gradient(ellipse at 80% 25%,#8a5cf6aa,transparent 55%),#0a1226"],
-    ["Deserto", "linear-gradient(180deg,#f2b36b,#d9703f 55%,#7a2f2a)"],
-    ["Estrelas", "radial-gradient(1.5px 1.5px at 20px 30px,#fff,transparent),radial-gradient(1px 1px at 90px 120px,#fff,transparent),radial-gradient(1.5px 1.5px at 160px 60px,#fff,transparent),linear-gradient(#050914,#14224a)", "173px 191px,227px 211px,263px 251px,cover"],
-    ["Sakura", "linear-gradient(135deg,#ffd6e0,#f7a1c4 50%,#b56b9c)"],
-    ["Grafite", "repeating-linear-gradient(0deg,#ffffff10 0 1px,transparent 1px 40px),repeating-linear-gradient(90deg,#ffffff10 0 1px,transparent 1px 40px),#20242b"],
-    ["Névoa", "linear-gradient(180deg,#586b86,#9fb0c6 60%,#dfe6ee)"],
-    ["Lava", "radial-gradient(ellipse at 50% 115%,#ff6a2b,transparent 60%),radial-gradient(ellipse at 10% 100%,#c81d25,transparent 50%),#1a0a0c"]
+    ["montanhas", "Montanhas na névoa", IMG("montanhas"), "cover", "light"],
+    ["amanhecer", "Amanhecer", IMG("amanhecer"), "cover", "light"],
+    ["lago", "Lago", IMG("lago"), "cover", "light"],
+    ["noite", "Noite de lua", IMG("noite"), "cover", "dark"],
+    ["bambu", "Bambuzal", IMG("bambu"), "cover", "light"],
+    ["oceano", "Oceano", "linear-gradient(180deg,#0b3d5c,#1b7a8c 60%,#9fd8cb)", "cover", "dark"],
+    ["aurora", "Aurora", "radial-gradient(ellipse at 30% 0%,#35e0a1aa,transparent 55%),radial-gradient(ellipse at 80% 25%,#8a5cf6aa,transparent 55%),#0a1226", "cover", "dark"],
+    ["deserto", "Deserto", "linear-gradient(180deg,#f2b36b,#d9703f 55%,#7a2f2a)", "cover", "dark"],
+    ["estrelas", "Estrelas", "radial-gradient(1.5px 1.5px at 20px 30px,#fff,transparent),radial-gradient(1px 1px at 90px 120px,#fff,transparent),radial-gradient(1.5px 1.5px at 160px 60px,#fff,transparent),linear-gradient(#050914,#14224a)", "173px 191px,227px 211px,263px 251px,cover", "dark"],
+    ["lava", "Lava", "radial-gradient(ellipse at 50% 115%,#ff6a2b,transparent 60%),radial-gradient(ellipse at 10% 100%,#c81d25,transparent 50%),#1a0a0c", "cover", "dark"]
   ];
-  let imgs = store.get("pomo-imgs", []), sel = store.get("pomo-bg", "d");
+  const DEFAULT = "b:montanhas";
+  let imgs = store.get("pomo-imgs", []), sel = store.get("pomo-bg", DEFAULT);
   const note = t => { $("bgnote").textContent = t; };
 
   function renderBg() {
-    const pressed = s => `aria-pressed="${sel === s}"`;
+    const pressed = k => `aria-pressed="${sel === k}"`;
     let h = `<button class="sw" data-s="d" style="background:var(--bg)" title="Cor do modo" aria-label="Cor do modo" ${pressed("d")}></button>`;
-    BG.forEach((b, i) => {
-      h += `<button class="sw" data-s="p${i}" style="background:${b[1]};background-size:${b[2] || "cover"}" title="${b[0]}" aria-label="${b[0]}" ${pressed("p" + i)}></button>`;
+    BG.forEach(b => {
+      h += `<button class="sw" data-s="b:${b[0]}" style="background:${b[2]};background-size:${b[3]}" title="${b[1]}" aria-label="${b[1]}" ${pressed("b:" + b[0])}></button>`;
     });
     imgs.forEach((src, i) => {
       h += `<span class="swrap"><button class="sw" data-s="i${i}" style="background:url(${src}) center/cover" aria-label="Imagem ${i + 1}" ${pressed("i" + i)}></button>` +
@@ -302,12 +313,14 @@
     });
     $("swatches").innerHTML = h;
 
-    const el = $("bg"); let v = "none", size = "cover";
-    if (sel[0] === "p" && BG[+sel.slice(1)]) { const b = BG[+sel.slice(1)]; v = b[1]; size = b[2] || "cover"; }
+    const el = $("bg"), b = BG.find(x => "b:" + x[0] === sel);
+    let v = "none", size = "cover", tone = "dark";
+    if (b) { v = b[2]; size = b[3]; tone = b[4]; }
     else if (sel[0] === "i" && imgs[+sel.slice(1)]) v = `url(${imgs[+sel.slice(1)]}) center/cover`;
-    else sel = "d";
+    else if (sel !== "d") { sel = DEFAULT; return renderBg(); }
     el.style.background = v; el.style.backgroundSize = size;
     document.body.classList.toggle("has-bg", sel !== "d");
+    document.body.classList.toggle("light", tone === "light");
   }
 
   $("swatches").onclick = e => {

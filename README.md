@@ -9,7 +9,7 @@ Timer Pomodoro em um único arquivo HTML: foco, pausa curta e pausa longa.
 - Menu lateral com fundo, música e configuração de tempos
 - Tempos configuráveis (padrão 25 / 5 / 15 min)
 - Pausa longa a cada 4 pomodoros
-- 10 fundos prontos, além da cor do modo, e envio de imagens próprias (até 8)
+- 10 fundos prontos (5 paisagens em estilo nanquim na pasta `fundos/` e 5 degradês), além da cor do modo, e envio de imagens próprias (até 8)
 - Música do YouTube: cole o link de um vídeo ou playlist e use o player na página
 - Opção de tocar a música no foco e pausar junto com o timer
 - Contador diário, tarefa atual e configurações salvos no navegador
