@@ -1,6 +1,6 @@
 # Pomodoro
 
-Timer Pomodoro em um único arquivo HTML: foco, pausa curta e pausa longa.
+Timer Pomodoro com foco, pausa curta e pausa longa.
 
 **Acesse o site: https://zhujaxuen.github.io/pomodoro/**
 
